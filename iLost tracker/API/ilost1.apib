@@ -1,27 +1,35 @@
 FORMAT: 1A
-HOST: http://polls.apiblueprint.org/
+HOST: https://dashboard.hologram.io
 
-# Hologram
+# iLost Front-end API [WIP]
+
+Our tracker consists of two main modes;
+
++ **short-range:** an external bluetooth transciever (estimote) that connects to the iLost tracker
+
++ **long-range:** hologram nova attached to the tracker allows for cellular data transfer and cellular triangualtion for location.
+
+
+## Group Long-range
+
+## Basic long-range Requests
 
 The Hologram HTTP API is a REST-style interface for managing Hologram devices,
-accounts, and cloud data.
+accounts, and cloud data, our tracker is built on the hologram architecture.
 
-## Requests
+Hologram provides the long range location tracking of the iLost tracker.
 
 To authenticate to the API, you must provide your API key as a query string parameter in each request.
-Find your API key on the Hologram Dashboard under
-[Account Settings](https://dashboard.hologram.io/account/api):
 
-![API key screenshot](https://hologram.io/wp-content/uploads/2016/12/apikey.png)
+**HOWEVER using Cloud-to-Device Messaging does not require an API key**
 
-Your API key gives you access to your personal account, as well as any organizations
-you are a member of. Many API endpoints accept an `orgid` argument to filter for devices or other objects
-within a specific organization.
+Please contact Hussein, Mariano or Thairan for API keys.
 
 Request bodies can be provided in either JSON or form-urlencoded formats. In the reference examples below,
 only the JSON versions are shown, and the `apikey` query string parameter is omitted for brevity.
 
-### Examples
+
+### Basic Examples
 
 **GET**
 
@@ -48,7 +56,7 @@ curl --verbose --request POST \
 'https://dashboard.hologram.io/api/1/sms/incoming?apikey=2rjpYZZNzFAoGxAgEP2SC6moL3emyB'
 ```
 
-## Responses
+## Basic Responses
 
 All API responses are returned as JSON objects with the following fields:
 
@@ -82,6 +90,88 @@ to indicate success (200) and common errors (403 Forbidden, etc).
   "error": "Not logged in"
 }
 ```
+
+
+## SMS [/api/1/sms]
+
+### Send SMS to a device [POST /api/1/sms/incoming]
+
+There is no cost to send SMS messages to Hologram devices via API.
+
+Please request Back-end team for **{deviceid}**
+
++ Request (application/json)
+    + Attributes
+        + deviceid: 1234 (number, required) - ID of the device to send to
+        + fromnumber: `+1-312-555-1212` (string, optional) - Phone number to display as the sender. Optional.
+        + body: Hello world! (string) - ASCII Text representation of the SMS body
+
++ Request With base64-encoded body (application/json)
+    + Attributes
+        + deviceid: 1234 (number, required) - ID of the device to send to
+        + fromnumber: `+1-312-555-1212` (string, optional) - Phone number to display as the sender. Optional.
+        + base64body: SGVsbG8sIFdvcmxkIQo= (string) - Base64-encoded message body
+
++ Response 200 (application/json)
+    + Attributes
+        + success: true (boolean) - Was the request successful?
+
+## Cloud-to-Device Messaging [/api/1/devices/message]
+
+Send a TCP or UDP message to one or more devices on the Hologram network.
+See the [guide](/docs/guide/cloud/message-to-device/) for details.
+
+### Send message to a device [POST /api/1/devices/messages]
+
+This method requires the API key (Send message to a device via webhook) is the reccomended path
+
++ Request (application/json)
+    + Attributes
+        + deviceids (array, required) - IDs of devices to send message
+            + 1234 (number)
+            + 1236 (number)
+        + protocol: TCP (string, required) - The protocol to use: 'TCP' or 'UDP'
+        + port: 80 (number, required) - The port to use
+        + data: Hello world! (string) - The data to send. Max length of 10k bytes. Must send either data or base64data
+        + base64data: SGVsbG8gd29ybGQhCg== (string) - The data to send, encoded in base64. Max length of 10k bytes. Must send either data or base64data
++ Response 200 (application/json)
+    + Attributes
+        + success: true (boolean) - Was the request successful?
+        + data (array)
+            + (object)
+                + deviceid: 1234 (number)
+                + messageid: 9a9e55f0-a167-4d9d-972e-b2ad0740d449 (string)
+
+### Send message to a device via webhook [POST /api/1/devices/messages/{deviceid}/{webhookguid}]
+
+**HIGHLY RECCOMENDED** 
+
+This endpoint does not require authentication with your API key, as the webhook GUID serves as
+an authentication token.
+
+Please request Back-end team for;
+
++ **{deviceid}**
+
++ **{webhookguid}**
+
+
++ Parameters
+    + deviceid: 12345 (number) - ID of the device to send to
+    + webhookguid: f56839c23a801251af8bf8c820f28a1f (string) - generated UUID for the webhook URL
+
++ Request (application/json)
+    + Attributes
+        + data: Hello world! (string) - The data to send. Max length of 10k bytes. Must send either data or base64data
+        + base64data: SGVsbG8gd29ybGQhCg== (string) - The data to send, encoded in base64. Max length of 10k bytes. Must send either data or base64data
++ Response 200 (application/json)
++ Attributes
+    + success: true (boolean) - Was the request successful?
+    + data (array)
+        + (object)
+            + deviceid: 1234 (number)
+            + messageid: 9a9e55f0-a167-4d9d-972e-b2ad0740d449 (string)
+
 
 ## Data Structures
 
@@ -236,663 +326,8 @@ to indicate success (200) and common errors (403 Forbidden, etc).
 + public_key: `ssh-rsa AAAAB3Nzaasdf... user@example.com` (string) - Public key
 
 
-## Group Device Management
+## Group Short-range
 
-See the [guide](https://hologram.io/docs/guide/connect/device-management)
-for details on devices, data plans, and related options.
+### Basic short-range Requests
 
-## Devices [/api/1/devices/{deviceid}]
-
-### List Devices [GET /api/1/devices{?orgid}]
-
-+ Parameters
-    + orgid: 1234 (number, optional)
-        Only return results for the given organization ID
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Device)
-
-### Get a Device [GET /api/1/devices/{deviceid}]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Device)
-
-## Cellular Links [/api/1/links/cellular]
-
-A Cellular Link is the association between a Device and a cellular data plan and SIM. Typically,
-a device has exactly one Cellular Link.
-
-### Activate SIMs [POST /api/1/links/cellular/bulkclaim]
-
-Corresponds to the dashboard's [Activate SIM](https://dashboard.hologram.io/activate) page.
-Activating a SIM creates a new device and corresponding cellular link.
-
-+ Request (application/json)
-    + Attributes
-        + sims (array) - array of SIM numbers to activate
-            + 99990000000012345678
-        + plan: 73 (number) -
-            Device data plan. Look up plan IDs with
-            [List Data Plans](#reference/device-management/data-plans/list-data-plans).
-        + tier: 1 (number) -
-            Geographic zone. Currently the valid tiers are `1` and `2`.
-            Higher tiers incur higher costs. See [pricing](https://hologram.io/pricing/) for details.
-
-+ Request Activate SIM range (application/json)
-    + Attributes
-        + simrange (string) - range of SIM numbers to activate
-            + Sample:  99990000000012345678-99990000000012345699
-        + plan: 73 (number) -
-            Device data plan. Look up plan IDs with
-            [List Data Plans](#reference/device-management/data-plans/list-data-plans).
-        + tier: 1 (number) -
-            Geographic zone. Currently the valid tiers are `1` and `2`.
-            Higher tiers incur higher costs. See [pricing](https://hologram.io/pricing/) for details.
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (object)
-                + device: 1234 (number) - Device ID of the new corresponding device
-                + link: 3214 (number) - ID of the new cellular link
-                + sim: 99990000000012345678 (string)
-        + order_data (Order Data)
-            + sku: PLAN
-            + unit_cost: 0.4
-            + total_cost: 0.4
-            + description: Data plan for SIMs
-            + extra_description
-                + Sample: Plan:Pay-as-you-go
-
-### List Cellular Links [GET /api/1/links/cellular{?orgid}]
-
-+ Parameters
-    + orgid: 1234 (number, optional)
-        Only return results for the given organization ID
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Cellular Link)
-
-### Get Cellular Link [GET /api/1/links/cellular/{linkid}]
-
-+ Parameters
-    + linkid: 54321 (number) - Integer ID of the link to retrieve
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Cellular Link)
-
-### Change Plan [POST /api/1/links/cellular/{linkid}/changeplan]
-
-+ Parameters
-    + linkid: 54321 (number) - Integer ID of the link to change
-
-+ Request (application/json)
-    + Attributes
-        + plan: 73 (number) -
-            Device data plan. Look up plan IDs with
-            [List Data Plans](#reference/device-management/data-plans/list-data-plans).
-        + tier: 1 (number) -
-            Geographic zone. Currently the valid tiers are `1` and `2`.
-            Higher tiers incur higher costs. See [pricing](https://hologram.io/pricing/) for details.
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + order_data (Order Data)
-            + sku: PLANCHANGE
-            + unit_cost: 2.23
-            + total_cost: 2.23
-            + description: Plan Change for 1 SIM
-            + transaction_type_id: PC (string)
-            + extra_description (string)
-                + Sample: Plan:5 MB
-
-### Change Overage Limit [POST /api/1/links/cellular/{linkid}/overagelimit]
-
-+ Parameters
-    + linkid: 54321 (number) - Integer ID of the link to modify
-
-+ Request (application/json)
-    + Attributes
-        + limit: 20000 (number) -
-            Number of bytes over the plan limit to allow. Set `-1` for no data limit. See the
-            [guide](https://hologram.io/docs/guide/connect/device-management#data-and-overage-limits) for details.
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Cellular Link)
-
-### Pause or Unpause Data [POST /api/1/links/cellular/{linkid}/state]
-
-+ Parameters
-    + linkid: 54321 (number) - Integer ID of the link to modify
-
-+ Request (application/json)
-    + Attributes
-        + state: pause (string) - New link state to set. One of: `pause`, `live`.
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (object)
-            + newstate: PAUSED-PENDING-USER (string) - New state of the link.
-                May be a 'pending' state until the change is propagated to the cellular network.
-
-
-## Device Tags [/api/1/devices/tags]
-
-Device tags are user-configurable categories that you can use to classify your devices. A device
-may be linked to more than one tag.
-
-### List Device Tags [GET /api/1/devices/tags]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Device Tag)
-
-### Create a Device Tag [POST /api/1/devices/tags]
-
-+ Request (application/json)
-    + Attributes
-        + name: My Tag (string, required) - Name for the new tag
-        + deviceids (array, optional) - Devices to add to the new tag (optional)
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Device Tag)
-
-### Delete a Device Tag [DELETE /api/1/devices/tags/{tagid}]
-
-+ Parameters
-    + tagid: 1234 (number) - The ID of the tag to delete
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-
-### Link a Device to a Tag [POST /api/1/devices/tags/{tagid}/link]
-
-+ Parameters
-    + tagid: 1234 (number) - The ID of the tag
-
-+ Request (application/json)
-    + Attributes
-        + deviceids (array) - List of device IDs to link to this tag
-            + 4321 (number)
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Device Tag)
-
-### Unlink a Device from a Tag [POST /api/1/devices/tags/{tagid}/unlink]
-
-+ Parameters
-    + tagid: 1234 (number) - The ID of the tag
-
-+ Request (application/json)
-    + Attributes
-        + deviceids (array) - List of device IDs to unlink from this tag
-            + 4321 (number)
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Device Tag)
-
-
-## Data Plans [/api/1/plans]
-
-The Data Plans endpoints return pricing and descriptions for the different data plans
-that Hologram offers. When changing the data plan for a cellular link via API,
-you must refer to the plan by its ID, which you can determine from these endpoints.
-
-### List Data Plans [GET /api/1/plans]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Data Plan)
-
-### Get a Data Plan [GET /api/1/plans/{planid}]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Data Plan)
-
-
-## Group Hologram Cloud
-
-## CSR Messages [/api/1/csr/rdm]
-
-See the [guide](https://hologram.io/docs/guide/cloud/csr) for details on sending
-messages to the Cloud Services Router (CSR).
-
-### Send a CSR Message [POST]
-
-+ Request (application/json)
-    + Attributes
-        + deviceid: 54321 (number) - Device ID to associate the message to
-        + tags (array, optional) - Additional topics to associate with the message. Optional
-        + data: Hello, Hologram! (string) - Data payload of the message
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-
-### List CSR Messages [GET /api/1/csr/rdm{?deviceid,limit,orgid,topicname,timestampstart,timestampend}]
-
-+ Parameters
-    + deviceid: 54321 (number, optional) - Optional. Filter for messages originating from one device
-    + limit: 100 (number, optional) - Return a maximum of this many messages. Default is 25
-    + orgid: 3222 (number, optional) - Filter for messages from devices belonging to this organization
-    + topicname: _RESTAPI_ (string, optional) - Filter for messages with a given topic
-    + timestampstart: 1480550400 (number, optional) - Only return messages received after this time (Unix timestamp)
-    + timestampend: 1480550400 (number, optional) - Only return messages received before this time (Unix timestamp)
-
-+ Response 200
-    + Attributes
-        + id: 123432 (number) - Numerical identifier for the message
-        + logged (string) - Datetime when the message was received
-            + Sample: 2016-12-04 20:21:00
-        + deviceid: 1234 (number) - Device that the message originated from
-        + data (string) - Raw message data and metadata
-        + record_id (string) - the message's internal UUID
-            + Sample: 8e274992-cf84-11e5-a67e-bc764e20b516
-        + tags (array) - Topics (formerly called tags) associated with the message
-
-+ Response 200 (application/json)
-
-        {
-          "success": true,
-          "continues": false,
-          "data": [
-            {
-              "id": 14,
-              "logged": "2015-04-09 15:59:59",
-              "deviceid": 77,
-              "data": "{\"source\":\"somesource\",\"tags\":[\"TestXYZ\",\"TestB\"],\"data\":\"dGVzdGRhdGEx\"}",
-              "record_id": "8e274992-cf84-11e5-a67e-bc764e20b516",
-              "matched_rules": [
-                {
-                  "ruleid": 1234,
-                  "error": false,
-                  "result_data": ""
-                }
-              ],
-              "tags": [
-                "TestB",
-                "TestXYZ"
-              ]
-            },
-            {
-              "id": 13,
-              "logged": "2015-04-08 21:05:42",
-              "deviceid": 1,
-              "data": "{\"source\":\"somesource\",\"tags\":[\"TestXYZ\",\"TestD\"],\"data\":\"dGVzdGRhdGEx\"}",
-              "record_id": "8e2748e7-cf84-11e5-a67e-bc764e20b516",
-              "matched_rules": []
-              "tags": [
-                "TestD",
-                "TestXYZ"
-              ]
-            }
-          ]
-        }
-
-
-## SMS [/api/1/sms]
-
-### Send SMS to a device [POST /api/1/sms/incoming]
-
-There is no cost to send SMS messages to Hologram devices via API.
-
-+ Request (application/json)
-    + Attributes
-        + deviceid: 1234 (number, required) - ID of the device to send to
-        + fromnumber: `+1-312-555-1212` (string, optional) - Phone number to display as the sender. Optional.
-        + body: Hello world! (string) - ASCII Text representation of the SMS body
-
-+ Request With base64-encoded body (application/json)
-    + Attributes
-        + deviceid: 1234 (number, required) - ID of the device to send to
-        + fromnumber: `+1-312-555-1212` (string, optional) - Phone number to display as the sender. Optional.
-        + base64body: SGVsbG8sIFdvcmxkIQo= (string) - Base64-encoded message body
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-
-## Cloud-to-Device Messaging [/api/1/devices/message]
-
-Send a TCP or UDP message to one or more devices on the Hologram network.
-See the [guide](/docs/guide/cloud/message-to-device/) for details.
-
-### Send message to a device [POST /api/1/devices/messages]
-
-+ Request (application/json)
-    + Attributes
-        + deviceids (array, required) - IDs of devices to send message
-            + 1234 (number)
-            + 1236 (number)
-        + protocol: TCP (string, required) - The protocol to use: 'TCP' or 'UDP'
-        + port: 80 (number, required) - The port to use
-        + data: Hello world! (string) - The data to send. Max length of 10k bytes. Must send either data or base64data
-        + base64data: SGVsbG8gd29ybGQhCg== (string) - The data to send, encoded in base64. Max length of 10k bytes. Must send either data or base64data
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (object)
-                + deviceid: 1234 (number)
-                + messageid: 9a9e55f0-a167-4d9d-972e-b2ad0740d449 (string)
-
-### Send message to a device via webhook [POST /api/1/devices/messages/{deviceid}/{webhookguid}]
-
-This endpoint does not require authentication with your API key, as the webhook GUID serves as
-an authentication token.
-In order to generate a webhook URL, please visit the cloud configuration page for your device.
-
-+ Parameters
-    + deviceid: 12345 (number) - ID of the device to send to
-    + webhookguid: f56839c23a801251af8bf8c820f28a1f (string) - generated UUID for the webhook URL
-
-+ Request (application/json)
-    + Attributes
-        + data: Hello world! (string) - The data to send. Max length of 10k bytes. Must send either data or base64data
-        + base64data: SGVsbG8gd29ybGQhCg== (string) - The data to send, encoded in base64. Max length of 10k bytes. Must send either data or base64data
-+ Response 200 (application/json)
-+ Attributes
-    + success: true (boolean) - Was the request successful?
-    + data (array)
-        + (object)
-            + deviceid: 1234 (number)
-            + messageid: 9a9e55f0-a167-4d9d-972e-b2ad0740d449 (string)
-
-## Spacebridge Tunneling [/api/1/tunnelkeys]
-
-See the [Spacebridge guide](https://hologram.io/docs/guide/cloud/spacebridge-tunnel)
-for details.
-
-### Add a public key [POST]
-
-Associate an SSH key with your user. This key can then be used to tunnel to
-devices that you control.
-
-+ Request (application/json)
-    + Attributes
-        + public_key: `ssh-rsa AAAAB3Nzaasdf... user@example.com` (string, required) - SSH public key
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-
-### List public keys [GET /api/1/tunnelkeys{?withdisabled}]
-
-+ Parameters
-    + withdisabled: 0 (number) - Set to `1` to include disabled keys
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Tunnel Key)
-
-### Disable a key [POST /api/1/tunnelkeys/{id}/disable]
-
-+ Parameters
-    + id: 1234 (number) - ID of the tunnel key to disable
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data
-          + id: 1234 (number) - The key ID
-
-### Enable a key [POST /api/1/tunnelkeys/{id}/enable]
-
-+ Parameters
-    + id: 1234 (number) - ID of the tunnel key to enable
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data
-          + id: 1234 (number) - The key ID
-
-
-## Group Account Management
-
-## Current User [/api/1/users/me]
-
-### Get user info [GET]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (User)
-
-
-## User Account Balance [/api/1/users/me/balance]
-
-Requests to the user account balance endpoints are equivalent to calling the
-[organization account balance endpoints](#reference/account-management/organization-account-balance)
-with the personal organization.
-
-### Get current balance [GET /api/1/users/me/balance]
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Account Balance)
-
-### Add balance [POST /api/1/users/me/balance]
-
-Charge the user's configured billing source and add that amount to your account balance.
-
-+ Request (application/json)
-
-    + Attributes
-        + addamount: 123.50 (number) - Amount to add to current user balance
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + order_data (Order Data)
-
-### Get balance history [GET /api/1/users/me/balancehistory]
-
-Retreive a history of transactions (credits and charges).
-
-+ Response 200 (application/json)
-
-        {
-          "success": true,
-          "data": [
-            {
-              "id": 54345,
-              "userid": 477,
-              "orgid":
-              "time": "2016-04-26 20:31:42",
-              "description": "Charge to balance: Data plan for SIM 8944502211130209115",
-              "amount": "-3.95"
-            },
-            {
-              "id": 54311,
-              "userid": 477,
-              "time": "2016-04-26 20:30:45",
-              "description": "one hundred",
-              "amount": "100.00"
-            }
-          ]
-        }
-
-## Organizations [/api/1/organizations/{orgid}]
-
-Organizations allow multiple users to share access to the same devices and billing account.
-See the [guide](https://hologram.io/docs/guide/connect/organizations) for more information.
-
-### List organizations [GET /api/1/organizations]
-
-List all organizations that you are a member of. This includes the special "personal"
-organization tied to your user.
-
-+ Response 200
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (array)
-            + (Organization)
-
-+ Response 200 (application/json)
-
-        {
-          "success": true,
-          "data": [
-            {
-              "id": 5678,
-              "name": "Smart Things LLC",
-              "is_personal": 0,
-              "ownerid": 1234,
-              "users": [
-                {
-                  "id": 1234,
-                  "permissions": [
-                    "billing",
-                    "activation",
-                    "changeplan"
-                  ],
-                  "first": "Joe",
-                  "last": "Data",
-                  "email": "joe@example.com"
-                }
-              ],
-              "pending": []
-            },
-            {
-              "id": 2223,
-              "name": "joe@example.com",
-              "is_personal": 1,
-              "ownerid": 1234,
-              "users": [
-                {
-                  "id": 1234,
-                  "permissions": [
-                    "billing",
-                    "activation",
-                    "changeplan"
-                  ],
-                  "first": "Joe",
-                  "last": "Data",
-                  "email": "joe@example.com"
-                }
-              ],
-              "pending": []
-            }
-          ]
-        }
-
-### Get an organization [GET /api/1/organizations/{orgid}]
-
-+ Parameters
-    + orgid: 4321 (number) - The organization's unique identifier
-
-+ Response 200
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Organization)
-
-+ Response 200 (application/json)
-
-        {
-          "success": true,
-          "data": {
-            "id": 5678,
-            "name": "Smart Things LLC",
-            "is_personal": 0,
-            "ownerid": 1234,
-            "users": [
-              {
-                "id": 1234,
-                "permissions": [
-                  "billing",
-                  "activation",
-                  "changeplan"
-                ],
-                "first": "Joe",
-                "last": "Data",
-                "email": "joe@example.com"
-              }
-            ],
-            "pending": []
-          }
-        }
-
-## Organization Account Balance [/api/1/organizations/{orgid}/balance]
-
-### Get current balance [GET /api/1/organizations/{orgid}/balance]
-
-+ Response 200 (application/json)
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + data (Account Balance)
-
-### Add balance [POST /api/1/organizations/{orgid}/balance]
-
-Charge the organization's configured billing source and add that amount to the account balance
-
-+ Request (application/json)
-
-    + Attributes
-        + addamount: 123.50 (number) - Amount to add to current user balance
-
-+ Response 200 (application/json)
-
-    + Attributes
-        + success: true (boolean) - Was the request successful?
-        + order_data (Order Data)
-
-### Get balance history [GET /api/1/organizations/{orgid}/balancehistory]
-
-Retrieve a history of transactions (credits and charges).
-
-+ Response 200 (application/json)
-
-        {
-          "success": true,
-          "data": [
-            {
-              "id": 54345,
-              "userid": 477,
-              "orgid":
-              "time": "2016-04-26 20:31:42",
-              "description": "Charge to balance: Data plan for SIM 8944502211130209115",
-              "amount": "-3.95"
-            },
-            {
-              "id": 54311,
-              "userid": 477,
-              "time": "2016-04-26 20:30:45",
-              "description": "one hundred",
-              "amount": "100.00"
-            }
-          ]
-        }
+[WIP] were focusing on getting long range to work first
