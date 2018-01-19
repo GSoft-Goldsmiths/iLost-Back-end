@@ -1,14 +1,14 @@
 import Foundation
 
-//works with hussein's raspberry pi
-//ask the tracker for its location
+// send a message to Hussein's tracker, you shoul recieve code 200 response
+// replace "Hello world!\" with the message you want to send
 
 let url = URL(string: "https://dashboard.hologram.io/api/1/devices/messages/158801/ced53f50a1abfe24d0daaa1144d6504f")!
 var request = URLRequest(url: url)
 request.httpMethod = "POST"
 request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
-request.httpBody = "{\n  \"data\": \"location_request\"\n}".data(using: .utf8) //asking for location
+request.httpBody = "{\n  \"data\": \"Hello world!\"\n}".data(using: .utf8)
 
 let task = URLSession.shared.dataTask(with: request) { data, response, error in
   if let response = response, let data = data {
