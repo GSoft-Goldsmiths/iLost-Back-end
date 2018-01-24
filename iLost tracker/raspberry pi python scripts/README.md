@@ -1,3 +1,4 @@
 # Raspberry pi scripts
 
-current task is getting long-range functionality working
+Hussein: im working on getting the short range working with puck.js, its going well. Long range will take the most time, I need help with completing long-range.
+          
