@@ -1,0 +1,3 @@
+# send from raspberry pi to wherever you want to (route is configured in hologram dashboard)
+
+var=$(sudo hologram modem location) && sudo hologram send "$var"
