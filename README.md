@@ -8,10 +8,8 @@ back-end work is tested and developed here before moving onto GSoft main repo
 
 # Current Team:
 
-* Marian: Web Server & tracker long-range
+* Marian: Software Tester & tracker Short-range
 
-* Fuad: Tracker Design & tracker website
+* Thairan: Tracker Design & Support
 
-* Thairan: racker Design & Support
-
-* Hussein: Short-range tracker & Support
+* Hussein: Long-range tracker & Support
