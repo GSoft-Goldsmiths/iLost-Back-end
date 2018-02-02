@@ -14,4 +14,26 @@ else
 	sleep 10s
 fi
 
+else if grep off typescript
+then
+	echo "switching off the tracker"
+	sudo hologram modem disconnect
+	>typescript
+	echo "tracker is off"
+else
+	echo "..."
+	sleep 10s
+fi
+
+else if grep on typescript
+then
+	echo "switching on the tracker"
+	sudo hologram modem connect
+	>typescript
+	echo "tracker is on"
+else
+	echo "..."
+	sleep 10s
+fi
+
 done
