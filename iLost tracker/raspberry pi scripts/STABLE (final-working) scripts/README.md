@@ -43,6 +43,8 @@
 
 * now reboot or shutdown the raspberry pi. it should now work.
 
+* test and create route in Hologram cloud
+
 ### any issues please contact marian or hussein
 
 
