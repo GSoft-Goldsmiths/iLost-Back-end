@@ -38,6 +38,8 @@
 
 * type: @reboot /home/pi/ilost-start-server.sh &
 		@reboot /home/pi/send_location.sh &
+		@reboot /home/pi/tracker_connect.sh &
+		@reboot /home/pi/tracker_disconnect.sh &
 
 * press: ctrl-x, press: y, press: enter
 

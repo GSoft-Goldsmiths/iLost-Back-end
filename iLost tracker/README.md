@@ -1,2 +1,3 @@
 # iLost-Back-end-Alpha-stage
-edit me
+
+# iLost API: https://ilost1.docs.apiary.io/#
