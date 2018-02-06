@@ -21,9 +21,9 @@
 
 * go to ilost tracker\raspberry pi scripts\STABLE (final-working) scripts\ on the back-end github repo
 
-* download the scripts: send_location.sh, ilost-start-server.sh & hologram_receive_1
+* download the scripts: send_location.sh, ilost-start-server.sh, tracker_connect.sh, tracker_disconnect.sh, hologram_receive_1
 
-* place these three scripts in the /home/pi  directory in the raspberry pi
+* place all these scripts in the /home/pi  directory in the raspberry pi
 
 * make sure to chmod u+x in terminal for each script (give permission for it to run properly)
 
@@ -43,7 +43,7 @@
 
 * now reboot or shutdown the raspberry pi. it should now work.
 
-* test and create route in Hologram cloud
+* test and create the routes in Hologram cloud. Three routes: on, off, rl
 
 ### any issues please contact marian or hussein
 
